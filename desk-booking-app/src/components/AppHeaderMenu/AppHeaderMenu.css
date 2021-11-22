@@ -1,0 +1,14 @@
+.app-logo-white {
+    padding-top: 4%;
+    object-fit: contain;
+    width: 180px;
+    height: 60px;
+    transition: transform .3s;
+}
+
+.list-item-drawer:hover .list-item-drawer-icon {
+        color: #279cce !important;     
+}
+
+
+

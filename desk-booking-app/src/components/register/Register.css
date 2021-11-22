@@ -1,0 +1,12 @@
+.flexprop{
+    margin-bottom: 5%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    size: 10%;
+}
+
+.flexprop>* {
+    flex: 1 1 160px;
+}
+

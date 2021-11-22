@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+
+.non-auth-background {
+    width: 100%;
+    min-height: 100vh;
+    background-image: url('./assets/backgroundImage.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
