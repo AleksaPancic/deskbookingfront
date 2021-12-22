@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState} from 'react'
 import {Box, Button, Typography, Modal, Paper, TextField,MenuItem,Select} from '@mui/material';
 import { useUserContext } from '../../UserContext';
 import { editProfileRequest } from '../../services/userService';

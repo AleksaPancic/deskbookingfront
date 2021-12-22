@@ -1,5 +1,5 @@
 import './UserProfile.css';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Box , Button, Divider, Typography} from '@mui/material';
 import LetterAvatar from 'lettered-avatar';
 import { useUserContext } from '../../UserContext';

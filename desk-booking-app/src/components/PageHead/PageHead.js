@@ -1,4 +1,4 @@
-import { Typography, Avatar, Button } from '@mui/material';
+import { Typography, Avatar } from '@mui/material';
 import { Box } from '@mui/system';
 import './PageHead.css';
 

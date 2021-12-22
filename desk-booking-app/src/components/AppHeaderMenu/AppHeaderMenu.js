@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './AppHeaderMenu.css';
 import {Box ,Drawer, AppBar,CssBaseline,Toolbar, List, ListItemIcon, ListItemText , Button, ListItemButton, Divider, Typography, IconButton, Collapse} from '@mui/material';
-import AppLogoWhite from '../../assets/deskbookingWhite.png'
+import AppLogoWhite from '../../assets/deskbookIngWhite.png'
 import MenuIcon from '@mui/icons-material/Menu';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -11,9 +11,9 @@ import { useState , useEffect} from 'react';
 import LetterAvatar from 'lettered-avatar';
 import AnchorMenu from '../AnchorMenu/AnchorMenu';
 import {menuItems} from './menuItems';
-import UserProvider, { useUserContext } from '../../UserContext';
-import jwtDecode from 'jwt-decode';
+import UserProvider from '../../UserContext';
 import { currentUser } from '../../services/userService';
+import { getAllUnits } from '../../services/bookingService';
 
 const drawerWidth = 240;
 
@@ -111,6 +111,7 @@ const AppHeaderMenu = (props) => {
     const [selectedSublistButton, setSelectedSublistButton] = useState(-1);
     const [anchorMenuEl, setAnchorMenuEl] = useState(null);
     const [openSubOptions, setOpenSubOptions] = useState(false);
+    const [bookingSuboptionsList, setBookingSuboptionsList] = useState(null);
     const { window } = props;
 
     const [user, setUser] = useState({});
@@ -135,32 +136,46 @@ const AppHeaderMenu = (props) => {
     };
 
     const handleSuboptionExpand = (id) => {
-      setSelectedListButton(id);
-      setOpenSubOptions(!openSubOptions);
+      if(selectedListButton !== id) {
+        setSelectedListButton(id);
+        setOpenSubOptions(true);
+      }
+      else setOpenSubOptions(!openSubOptions);
     }
 
     const handleMenuItemButtonClick = (id, urlFragment) => {
       setSelectedSublistButton(-1);
       setSelectedListButton(id);
-      history.push(urlFragment);
+      history.push(urlFragment, {detail: bookingSuboptionsList});
     }
 
-    const handleSubmenuItemButtonClick = (id, urlFragment) => {
-      setSelectedSublistButton(id);
-      history.push(urlFragment);
+    const handleSubmenuItemButtonClick = (subitem, urlFragment) => {
+      setSelectedSublistButton(subitem.id);
+      history.push(`${urlFragment}/${subitem.city}` , {detail: subitem });
     }
 
 
   useEffect(() => {
     currentUser()
     .then((res) => {
-      console.log(res);
+     // console.log(res);
       setUser(res);
     }).catch((error) => {
       console.log(error);
     })
     
     },[])
+
+    useEffect(() => {
+      getAllUnits()
+      .then((res) => {
+       // console.log(res);
+        setBookingSuboptionsList(res);
+      }).catch((error) => {
+        console.log(error);
+      })
+      
+      },[])
 
 
     const drawer = (
@@ -175,10 +190,11 @@ const AppHeaderMenu = (props) => {
         </Box>
         <Divider variant="middle" />
         <List sx={{ marginTop: "8px" }} onClick={() => setMobileOpen(false)}>
-          {menuItems.itemsList.map((item) => (
+          {user.roles && menuItems.itemsList.map((item) => (
+            (item.adminOption ? user.roles.find(role => (role.id === 2 || role.id === 3)) : true) &&
+            (
             <React.Fragment key={item.itemText}>
               <ListItemButton
-                key={item.itemText}
                 selected={selectedListButton === item.id}
                 className="list-item-drawer"
                 sx={
@@ -207,31 +223,35 @@ const AppHeaderMenu = (props) => {
                   primary={item.itemText}
                 />
                 {item.suboptions &&
-                  (openSubOptions ? <ExpandLess /> : <ExpandMore />)}
+                  ((openSubOptions && selectedListButton === item.id) ? <ExpandLess /> : <ExpandMore />)}
               </ListItemButton>
-              {item.suboptions &&
-                  (<Collapse in={openSubOptions} timeout="auto" unmountOnExit>
+              {item.suboptions && bookingSuboptionsList &&
+                  (<Collapse in={(openSubOptions && selectedListButton === item.id)} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                      {item.suboptions.map((subitem) => (
-                      <ListItemButton key={subitem.subitemText}  
-                      onClick={() => handleSubmenuItemButtonClick(subitem.subitemId, subitem.subitemUrlFragment)}
+                      {bookingSuboptionsList.map((subitem) => (
+                        <React.Fragment  key={subitem.unitName}>
+                          {(item.id !== 4 || subitem.parkingMap !== null) &&
+                      <ListItemButton  
+                      onClick={() => handleSubmenuItemButtonClick(subitem, item.urlFragment)}
                       sx={
-                        selectedSublistButton === subitem.subitemId
+                        selectedSublistButton === subitem.id
                           ? styles.subitemListItemStyleSelected
                           : styles.subitemListItemStyle
                       }>
                         <ListItemText
-                          primary={subitem.subitemText}
+                          primary={subitem.unitName}
                           primaryTypographyProps={
                             styles.listItemTypographyStyle
                           }
                         />
-                      </ListItemButton>
+                      </ListItemButton>}
+                      </React.Fragment>
                       ))}     
                     </List>
                   </Collapse>
                 )}
             </React.Fragment>
+            )
           ))}
         </List>
       </Box>

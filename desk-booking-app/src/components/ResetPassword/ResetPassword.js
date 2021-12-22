@@ -1,11 +1,12 @@
-import './Login.css';
-import { Typography, Paper, TextField , Button, InputAdornment, Box, Fade} from '@mui/material';
+import './ResetPassword.css';
+import * as React from 'react';
+import { Typography, Paper, TextField , Button, InputAdornment, Box, Fade, Alert, IconButton, Collapse} from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import LockIcon from '@mui/icons-material/Lock';
 import { useCallback, useEffect, useState } from 'react';
 import AppLogo from '../../assets/deskbookIng.png'
 import { useHistory } from "react-router";
-import { loginRequest } from '../../services/loginService';
+import { resetRequest } from '../../services/resetService';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 const styles = {
@@ -15,7 +16,7 @@ const styles = {
     },
     paperStyle: {
         width: "42vh",
-        height: "460px",
+        height: "365px",
         minWidth: "200px",
         minHeight: "230px",
         display: "flex",
@@ -31,8 +32,7 @@ const styles = {
       textAlign: "start",
     },
     buttonStyle: {
-        marginTop: "5%",
-        
+      marginTop: "5%"
     },
     inputBoxWrapperStyle: {
       width: "100%",
@@ -48,40 +48,35 @@ const styles = {
       marginBottom: "4%"
       
     },
-    signInButtonStyle: {
+    formLogInButtonStyle: {
       fontWeight: "bold",
       paddingLeft: "2%",
       fontSize: '17px',
       '&:hover' : {
         textDecoration: 'underline'
       }
-    },
-    resetButtonStyle: {
-      fontWeight: "bold",
-      paddingLeft: "2%",
-      fontSize: '9px',
-      '&:hover' : {
-        textDecoration: 'underline'
-      }
     }
-    
+
 }
 
-const Login = (props) => {
+
+const ResetPassword = (props) => {
+
+    var switchAlert = false;
 
     const [data, setData]= useState({
-      username: "",
-      password: ""
+      username: ""    
     });
      
-    const [errorPassMessage, setErrorPassMessage] = useState('');
+    const [open, setOpen] = React.useState(false);
+
     const [errorUsernameMessage, setErrorUsernameMessage] = useState('');
-    const [error, setError] = useState('');
+    
     const history = useHistory();
 
     const handleKeyboardSubmit = useCallback(e => {
         if(e.keyCode === 13) {
-          handleLogIn();
+          handleResetPassword();
         }},[data]); 
 
     useEffect(() => {
@@ -94,38 +89,23 @@ const Login = (props) => {
     
 
     
-    const handleLogIn = () => {
-      setErrorPassMessage('');
+    const handleResetPassword = () => {
       setErrorUsernameMessage('');
       const userValid = isUsernameValid(data.username);
-        if(!userValid.err){
-          const passValid = isPasswordValid(data.password);
-          if(!passValid.err){
-            loginRequest(data.username,data.password)
-              .then((res) => {
-                props.logIn(res);
-              }).catch((error) => {
-                setError(error);
-               // console.log(error + 'eeeeeeeeeee');
-              })
-            
-          }
-          else setErrorPassMessage(passValid.errMsg);
+      if(!userValid.err){
+        switchAlert = true;
+        resetRequest(data)
+          .then((res) => {
+            console.log(res);
+            }).catch((error) => {
+            console.log(error);
+          })
         }
-        else setErrorUsernameMessage(userValid.errMsg);
-    }
-
-    const isPasswordValid  = (password) => {
-       if(password.length < 4 ) {
-         return {err: true,errMsg: "Password must be at least 4 characters long!"};
-       }
-       else {
-        return {err: false,errMsg: ""};
-       }
-    }
-
-    const isUsernameValid = (username) => {
-      /*!username.endsWith("@enjoying.rs")*/
+        else {
+          setErrorUsernameMessage(userValid.errMsg);
+        }   
+     }
+     const isUsernameValid = (username) => {
        if(username.length === 0){
           return {err: true,errMsg: "Enter your username!"};
         }
@@ -133,7 +113,6 @@ const Login = (props) => {
           return {err: false,errMsg: ""};
         }
     }
-
     return (
       <Fade 
       style={styles.transitionStyle} 
@@ -145,17 +124,15 @@ const Login = (props) => {
           <img src={AppLogo} alt="deskbooking" className="login-app-logo" />
         </Box>
         <Typography sx={styles.formTitleStyle} variant="h5">
-          Login
+          Reset your password
         </Typography>
         <Typography sx={styles.formSubtitleStyle} variant="subtitle1">
-          Don't have an account yet?
-          <Button sx={styles.signInButtonStyle} onClick={() => history.push('/register')}>
-            SIGN UP
-          </Button>
-        </Typography>
+          Back to
+          <Button sx={styles.formLogInButtonStyle} onClick={() => history.push('/login')} >LOG IN?</Button>
+        </Typography>  
         <Box sx={styles.inputBoxWrapperStyle}>
           <Typography variant="subtitle1" gutterBottom>
-            Your username
+            Enter your username
           </Typography>
           <TextField
             value={data.username}
@@ -174,47 +151,41 @@ const Login = (props) => {
             }}
           />
         </Box>
+        
         <Box sx={styles.inputBoxWrapperStyle}>
-          <Typography variant="subtitle1" gutterBottom>
-            Your password
-          </Typography>
-          <TextField
-            value={data.password}
-            onChange={(e) => setData({ ...data, password: e.target.value })}
-            sx={styles.textFieldStyle}
-            error={errorPassMessage.length > 0}
-            helperText={errorPassMessage}
-            id="password"
-            type="password"
-            variant="outlined"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-          {error.length > 0 &&
-            <Typography variant="body" color="error.main" gutterBottom>
-            {error}
-            </Typography>
-          }
-        </Box>
         <Button
           sx={styles.buttonStyle}
           variant="contained"
-          onClick={() => handleLogIn()}
+          onClick={() => {handleResetPassword();
+                         if(switchAlert){ 
+                         setOpen(true);}}}
         >
-          Login
+          Reset password
         </Button>
-        <Button sx={styles.resetButtonStyle} onClick={() => history.push('/reset')}>
-          Forgot password?
-          </Button>
+        <Collapse in={open}>
+        <Alert
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+          sx={{ mb: 2 }}
+        >
+          Check your email!
+        </Alert>
+      </Collapse>
+        </Box>
       </Paper>
       </Fade>
     );
 }
-export default Login;
+export default ResetPassword;
 
 

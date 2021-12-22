@@ -1,5 +1,5 @@
 import './Register.css';
-import { Typography, Paper, TextField , Button, InputAdornment, Box, Fade, Select, FormControl, Divider, MenuItem} from '@mui/material';
+import { Typography, Paper, TextField , Button, InputAdornment, Box, Fade, Select, FormControl, Divider, MenuItem, CircularProgress} from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import EmailIcon from '@mui/icons-material/Email';
@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from "react-router";
 import * as React from 'react';
 import { registerRequest } from '../../services/registerService';
-
+  
 const styles = {
     transitionStyle: {
       transitionDelay:"300ms",
@@ -66,6 +66,17 @@ const styles = {
 
 }
 
+const defaultState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  telephone: "",
+  username: "",
+  password: "",
+  confirmPassword: "",
+  workingUnitName:""
+}
+
 const Register = (props) => {
 
     const history = useHistory();
@@ -77,9 +88,13 @@ const Register = (props) => {
         username: "",
         password: "",
         confirmPassword: "",
-        workingUnit:""
+        workingUnitName:""
         });
 
+
+      const [success, setSuccess] = useState('');
+      const [error, setError] = useState('');
+      const [spinner, setSpinner] = useState(false);
       const [errorFirstNameMessage, setErrorFirstNameMessage] = useState('');
       const [errorLastNameMessage, setErrorLastNameMessage] = useState('');
       const [errorEmailMessage, setErrorEmailMessage] = useState('');
@@ -87,58 +102,48 @@ const Register = (props) => {
       const [errorUsernameMessage, setErrorUsernameMessage] = useState('');
       const [errorPassMessage, setErrorPassMessage] = useState('');
       const [errorPassConfirmationMessage, setErrorPassConfirmationMessage] = useState('');
-      //const [errorWorkingUnitMessage, setErrorWorkingUnitMessage] = useState('');
 
       const handleRegistration = () => {
+        setError('');
+        setSuccess('');
         setErrorFirstNameMessage('');
         setErrorLastNameMessage('');
         setErrorEmailMessage('');
         setErrorTelephoneMessage('');
         setErrorUsernameMessage('');
         setErrorPassMessage('');
-       // setErrorWorkingUnitMessage('');
 
         const userValid = isUsernameValid(data.username);
-          if(!userValid.err){
-            const passValid = isPasswordValid(data.password);
-            if(!passValid.err){
-             const emailValid = isEmailValid(data.email);
-             if(!emailValid.err){
-               const telephoneValid = isTelephoneValid(data.telephone);
-               if(!telephoneValid.err){
-                const firstnameValid = isFirstNameValid(data.firstName);
-                if(!firstnameValid.err){
-                  const lastnameValid = isLastNameValid(data.lastName);
-                  if(!lastnameValid.err){
-                    const confirmpw = isConfirmationPasswordValid(data.confirmpassword)
-                    if(!confirmpw.err)
-                    {
-                      registerRequest(data)
-                      .then((res) => {
-                        console.log(res);
-                      }).catch((error) => {
-                        console.log(error);
-                      })
-                    // console.log(res);
-                     // props.Register(data);
-                    //  const requestObject = data;
-                    //  delete requestObject['confirmpassword'];
-                    //  sendRegisterRequest(requestObject);
-                    }
-                    else setErrorPassConfirmationMessage(confirmpw.errMsg);
-                  }
-                  else setErrorLastNameMessage(lastnameValid.errMsg);
-                }
-                else setErrorFirstNameMessage(firstnameValid.errMsg);
-               }
-               else setErrorTelephoneMessage(telephoneValid.errMsg);
-             }
-             else setErrorEmailMessage(emailValid.errMsg);
-            }
-            else setErrorPassMessage(passValid.errMsg);
+        const passValid = isPasswordValid(data.password);
+        const emailValid = isEmailValid(data.email);
+        const telephoneValid = isTelephoneValid(data.telephone);
+        const firstnameValid = isFirstNameValid(data.firstName);
+        const lastnameValid = isLastNameValid(data.lastName);
+        const confirmpw = isConfirmationPasswordValid(data.confirmPassword)
+
+          if(!userValid.err && !passValid.err && !emailValid.err && !telephoneValid.err && !firstnameValid.err 
+            && !lastnameValid.err && !confirmpw.err){
+              setSpinner(true);
+            registerRequest(data)
+            .then((res) => {
+             // console.log(res);
+             setSuccess("Successfull registration, check your email for confirmation");
+            }).catch((error) => {
+              setError("Error " + error);
+            })
+            .finally(() => {
+              setSpinner(false);
+            })
+          } else {
+            setErrorPassConfirmationMessage(confirmpw.errMsg);
+            setErrorLastNameMessage(lastnameValid.errMsg);
+            setErrorFirstNameMessage(firstnameValid.errMsg);
+            setErrorTelephoneMessage(telephoneValid.errMsg);
+            setErrorEmailMessage(emailValid.errMsg);
+            setErrorPassMessage(passValid.errMsg);
+            setErrorUsernameMessage(userValid.errMsg);
           }
-          else setErrorUsernameMessage(userValid.errMsg);
-      }
+        }
 
       const handleKeyboardSubmit = useCallback(e => {
         if(e.keyCode === 13) {
@@ -152,19 +157,24 @@ const Register = (props) => {
       }
 
       },[handleKeyboardSubmit])
+
       var passwordvalidation;
       const isPasswordValid  = (password) => {
-        if(password.length < 4 ) {
-          return {err: true,errMsg: "Password must be at least 4 characters long!"};
-        } 
+        var pattern = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])");
+        if(password.length < 8 || password.length > 30) {
+          return {err: true,errMsg: "Password must be at least 8 and maximum 30 characters long!"};
+        }
+        else if(!(pattern.test(password))) {
+          return {err: true,errMsg: "Password must contain number, lowercase, uppercase alphabetical and special character!"};
+         }
         else {
          passwordvalidation = password;
          return {err: false,errMsg: ""};
         }
      }
 
-     const isConfirmationPasswordValid  = (confirmpassword) => {
-      if(passwordvalidation !== confirmpassword) {
+     const isConfirmationPasswordValid  = (confirmPassword) => {
+      if(passwordvalidation !== confirmPassword) {
         return {err: true,errMsg: "Password does not match!"};
       }
       else {
@@ -174,8 +184,12 @@ const Register = (props) => {
 
  
      const isUsernameValid = (username) => {
+        var pattern = new RegExp(/^[a-zA-Z0-9]+$/g);
         if(username.length === 0){
            return {err: true,errMsg: "Enter your username!"};
+         }
+        else if(!(pattern.test(username))) {
+          return {err: true,errMsg: "Only alphabetic characters and numbers are allowed!"};
          }
          else { 
            return {err: false,errMsg: ""};
@@ -364,12 +378,12 @@ const Register = (props) => {
           <TextField
           fullWidth 
             size="small"
-            value={data.confirmpassword}
-            onChange={(e) => setData({ ...data, confirmpassword: e.target.value })}
+            value={data.confirmPassword}
+            onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
             sx={styles.textFieldStyle}
             error={errorPassConfirmationMessage.length > 0}
             helperText={errorPassConfirmationMessage}
-            id="confirmpassword"
+            id="confirmPassword"
             type = "password"
             variant="outlined"
             InputProps={{
@@ -414,16 +428,21 @@ const Register = (props) => {
           <FormControl fullWidth>
           <Select
             size="small"
-            defaultValue={"Nis"}
-            id="workingUnit"
-            onChange={(e) => setData({ ...data, workingUnit: e.target.value })}
+            defaultValue={""}
+            id="workingUnitName"
+            onChange={(e) => setData({ ...data, workingUnitName: e.target.value })}
           >
-          <MenuItem value={"Nis"}>Nis</MenuItem>
-          <MenuItem value={"Beograd"}>Beograd</MenuItem>
-          <MenuItem value={"Kragujevac"}>Kragujevac</MenuItem>
+          <MenuItem value={"Nis Office"}>Nis</MenuItem>
+          <MenuItem value={"Beograd Office"}>Beograd</MenuItem>
+          <MenuItem value={"Kragujevac Office"}>Kragujevac</MenuItem>
           </Select>
           </FormControl>  
         </Box>
+        </Box>
+        <Box sx={{marginTop:'2%', display: 'flex', justifyContent: 'center'}}>
+        {spinner && <CircularProgress size = {30}/>}
+        {success.length > 0 && <Typography sx={{color:"success.main"}}> {success} </Typography> }
+        {error.length > 0 && <Typography sx={{color:"error.main"}}> {error} </Typography> }
         </Box>
         <Box sx={styles.signUpButtonWrapper}>
         <Button
