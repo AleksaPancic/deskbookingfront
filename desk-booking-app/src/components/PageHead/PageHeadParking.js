@@ -53,7 +53,7 @@ const styles = {
     }
 };
 
-const iconParkingMap = "http://localhost:8080/images/map_glass.png";
+const iconParkingMap = "/images/map_glass.png";
 
 const PageHeadParking = (props) => {
 

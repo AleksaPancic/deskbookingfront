@@ -2,7 +2,9 @@
   "name": "desk-booking-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
+    "@date-io/date-fns": "^3.2.1",
     "@date-io/moment": "^2.11.0",
     "@devexpress/dx-react-grid-material-ui": "^2.7.6",
     "@devexpress/dx-react-scheduler-material-ui": "^2.7.6",
@@ -11,8 +13,8 @@
     "@mui/icons-material": "^5.0.5",
     "@mui/lab": "^5.0.0-alpha.56",
     "@mui/material": "^5.0.6",
-    "@mui/styles": "^5.1.1",
     "@mui/system": "^5.0.6",
+    "@mui/x-date-pickers": "^7.28.2",
     "@testing-library/jest-dom": "5.15.0",
     "@testing-library/react": "11.2.7",
     "@testing-library/user-event": "12.8.3",
@@ -20,10 +22,10 @@
     "jwt-decode": "^3.1.2",
     "lettered-avatar": "^1.0.0",
     "moment": "^2.29.1",
-    "react": "17.0.2",
+    "react": "^18.2.0",
     "react-big-calendar": "^0.38.1",
     "react-bootstrap": "^2.0.2",
-    "react-dom": "17.0.2",
+    "react-dom": "^18.2.0",
     "react-router-dom": "5.3.0",
     "react-scripts": "4.0.3",
     "recharts": "^2.1.8",
@@ -31,7 +33,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "export NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
     "test": "react-scripts test"
   },
   "eslintConfig": {

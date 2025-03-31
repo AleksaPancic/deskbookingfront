@@ -1,10 +1,9 @@
 import axios from 'axios'
 
-const localServerUrl = 'http://localhost:8080';
 
 class AxiosInstance {
      constructor() {
-         this.instance = axios.create({baseURL: localServerUrl});
+         this.instance = axios.create();
 
         this.instance.interceptors.response.use(response => {
             return response;
@@ -12,7 +11,7 @@ class AxiosInstance {
             const originalRequest = error.config;
             if(error.response.status === 401 && !originalRequest._retry){
                 originalRequest._retry = true;
-                return axios.get(`${localServerUrl}/profile/token/refresh`, {
+                return axios.get(`/profile/token/refresh`, {
                     headers: {
                         "Authorization": `Bearer ${sessionStorage.getItem('refresh_token')}`
                     }
